@@ -16,6 +16,10 @@ module ForemanGoogle
       end
     end
 
+    initializer 'foreman_google.filter_parameters' do |app|
+      app.config.filter_parameters += [/key_content/]
+    end
+
     initializer 'foreman_google.register_plugin', before: :finisher_hook do |_app|
       Foreman::Plugin.register :foreman_google do
         requires_foreman '>= 5.1'
@@ -33,8 +37,8 @@ module ForemanGoogle
       ::Host::Managed.include ForemanGoogle::HostManagedExtensions
       ::Api::V2::ComputeResourcesController.include ForemanGoogle::Api::V2::ComputeResourcesExtensions
       ::Api::V2::ComputeResourcesController.include ForemanGoogle::Api::V2::ApipieExtensions
-      ::Api::V2::ComputeResourcesController.include Foreman::Controller::Parameters::ComputeResourceExtension
-      ::ComputeResourcesController.include Foreman::Controller::Parameters::ComputeResourceExtension
+      ::Api::V2::ComputeResourcesController.prepend Foreman::Controller::Parameters::ComputeResourceExtension
+      ::ComputeResourcesController.prepend Foreman::Controller::Parameters::ComputeResourceExtension
       Google::Cloud::Compute::V1::AttachedDisk.include GoogleExtensions::AttachedDisk
     rescue StandardError => e
       Rails.logger.warn "ForemanGoogle: skipping engine hook (#{e})"
